@@ -5,11 +5,20 @@ Homework reflection 1
 
 1. In Coding Quiz 1, you are asked to find the distance of the farthest match in a set.  Is this farthest match distance too far to be a meaningful match?  How can you decide this?
 
+You could decide this by looking at the distribution of all of the match distances. As we are not setting a radius (for that particular problem), we are able to see all possible distances. As with other distributions,
+we are able to analyze it to determine the mean match distance, standard deviations, and consequently identify any outliers. Outliers will by definition be considered the distances too far to be meaningful. Alternatively,
+depending on the context of the problem (treatment effect, cost effect, etc) it might be worth it to set a maximum threshold for a match distance based on previous work/research and use that to test your calculated distances.
+
 2. In Coding Quiz 1, there are two approaches to matching: 
 (A) Picking the best match X = 0 corresponding to each X = 1 using Z values.
 (B) Using radius_neighbors to pick all matches X = 0 within a distance of 0.2 of each X = 1.
 
 Invent your own type of matching similar to 1 and 2 (or look one up on the internet), which has a different way to pick the matches in X = 0.  Clearly explain the approach you invented or found.
+
+A different type of matching could rely on randomly matching all values in both groups, calculating the average distance as a metric to minimize, then iterate switching pairs randomly and recalculating the change in the
+average distance. A new pair would be kept only if there was a decrease in this metric, and this could proceed for a number of rounds across all matches. It would probably not be efficient, nor exhaustive, but it is a
+different but similar type of matching to 1 and 2.
+
 
 Homework reflection 2
 
