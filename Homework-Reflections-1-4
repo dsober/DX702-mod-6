@@ -24,16 +24,74 @@ Homework reflection 2
 
 1. Invent an example situation that would use fixed effects.
 
+Participants complete a cognitive test that is used to estimate their disease progression. This effect is affected by covariates such as age, sex, years of education, and underlying health conditions. A fixed effects model can be used to estimate the cognitive tests determination of disease progression while accounting for the effect of covariates as well.
+
 2. Write a Python program that performs a bootstrap simulation to find the variance in the mean of the Pareto distribution when different samples are taken.  Explain what you had to do for this.  As you make the full sample size bigger (for the same distribution), what happens to the variance of the mean of the samples?  Does it stay about the same, get smaller, or get bigger?
+
+alpha = 2
+n_sample = 1000
+rng = np.random.default_rng()
+pareto_sample = (rng.pareto(alpha, n_sample) + 1) * 1.0
+n_sims = 10000
+sim_means = []
+
+for i in range(n_sims):
+    bootstrap_sample = rng.choice(pareto_sample, size=n_sample, replace=True)
+    sim_means.append(np.mean(bootstrap_sample))
+
+sim_variance = np.var(sim_means)
+
+print(sim_variance)
+
+I had to generate the initial distribution using numpy random functions and pre-set parameters. Then I iterated by the number of simulations I wanted to bootstrap, randomly selecting from the original distribution to create a new sample and adding the mean of this new sample to a list of all means for the simulations. Finally, I found the variance in this list of means. This variance seems to get smaller the larger the original sample size to generate the initial distribution.
 
 Homework reflection 3
 
 1. In the event study in Coding Quiz 3, how would we go about testing for a change in the second derivative as well?
 
+We would need to add new terms for the model that account not just for the effect of the event over time (t_after and t) but also for the rate of change of the effect over time as well. This could be done by including extra terms in our models.
+
 2. Create your own scenario that illustrates differences-in-differences. Describe the story behind the data and show whether there is a nonzero treatment effect.
+
+Scenario: 3 weeks into a 10 week program, some students are secretly given a huge box of candy in commendation of their "study efforts". The other students are not, and no other differences between the two groups exist. Is there a difference in the testing scores of these students based only on the box of candy?
+
+t = np.arange(1000)
+t0 = 300
+Y_A = 1.3 * (t < t0) + 2 * (t >= t0) + np.random.normal(0, 1, (1000,))
+Y_B = 1.1 + np.random.normal(0, 1, (1000,))
+Y = np.concatenate((Y_A, Y_B))
+group_A = np.concatenate((np.ones(1000), np.zeros(1000)))
+After = np.tile(1 * (t >= t0), 2)
+X = sm.add_constant(pd.DataFrame({"alpha_group": group_A, "alpha_time": After, "beta_1": group_A * After}))
+results = sm.OLS(Y, X).fit()
+results.params
+
+const          1.035950
+alpha_group    0.335590
+alpha_time     0.045940
+beta_1         0.588556
+dtype: float64
 
 Homework reflection 4
 
 1. The Coding Quiz gives two options for instrumental variables.  For the second item (dividing the range of W into multiple ranges), explain how you did it, show your code, and discuss any issues you encountered.
 
+min_W = np.min(df_4_1.W)
+max_W = np.max(df_4_1.W)
+
+effects = []
+
+curr_W = min_W
+while curr_W + 0.2 < max_W:
+    df_bin = df_4_1[(df_4_1.W > curr_W) & (df_4_1.W <= curr_W + 0.2)]
+    #df_bin = df.copy()
+    effects.append((df_bin[df_bin.Z == 1].Y.mean() - df_bin[df_bin.Z == 0].Y.mean()) / (df_bin[df_bin.Z == 1].X.mean() - df_bin[df_bin.Z == 0].X.mean()))
+    curr_W += 0.2
+
+np.nanmean(effects)
+
+I ran into issues averaging over all values of W, as some ranges gave a pretty good estimate of the effect but others were way off, so my overall mean effect over all W was not great.
+
 2. Plot the college outcome (Y) vs. the test score (X) in a small range of test scores around 80. On the plot, compare it with the Y probability predicted by logistic regression. The ground truth Y value is 0 or 1; don't just plot 0 or 1 - that will make it unreadable.  Find some way to make it look better than that.
+![alt text](image-1.png)
+To be completely honest these instructions were incredibly unhelpful about plotting it but not just 0 or 1 and making it look better. I have plotted the probabilities (which have slightly more range) in the y-axis, and colored the points by the outcome Y. This plot is still not the clearest, but I don't really know what you wanted here.
